@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #0a3d62;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.9rem;
+      margin: 0.6rem 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: 0.3s ease;
+    }
+    input:focus, select:focus {
+      border-color: #0a3d62;
+      outline: none;
+    }
+    button {
+      background: linear-gradient(to right, #43cea2, #185a9d);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .result {
+      margin-top: 1.5rem;
+      padding: 1.2rem;
+      background-color: #f1f2f6;
+      border-left: 5px solid #0a3d62;
+      border-radius: 10px;
+      display: none;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .result p {
+      margin: 0.5rem 0;
+      color: #2f3542;
+    }
+    #location {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #0a3d62;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ Weather Explorer</h1>
+    <form id="weatherForm">
+      <input type="text" id="city" placeholder="Enter City Name" required />
+      <select id="airQuality">
+        <option value="yes">Show Air Quality</option>
+        <option value="no">Hide Air Quality</option>
+      </select>
+      <button type="submit">Get Weather</button>
+    </form>
+    <div class="result" id="resultBox">
+      <h2 id="location"></h2>
+      <p><strong>Temperature:</strong> <span id="temp"></span> °C</p>
+      <p><strong>Condition:</strong> <span id="condition"></span></p>
+      <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+      <p><strong>Wind Speed:</strong> <span id="wind"></span> kph</p>
+      <p id="aqiBox"><strong>Air Quality Index (PM2.5):</strong> <span id="aqi"></span></p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('weatherForm');
+    const resultBox = document.getElementById('resultBox');
+    const locationField = document.getElementById('location');
+    const tempField = document.getElementById('temp');
+    const conditionField = document.getElementById('condition');
+    const humidityField = document.getElementById('humidity');
+    const windField = document.getElementById('wind');
+    const aqiBox = document.getElementById('aqiBox');
+    const aqiField = document.getElementById('aqi');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const city = document.getElementById('city').value.trim();
+      const aqi = document.getElementById('airQuality').value;
+
+      const url = `https://api.weatherapi.com/v1/current.json?key=c35f908de33d47f5a3672518250508&q=${encodeURIComponent(city)}&aqi=${aqi}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          throw new Error(data.error.message);
+        }
+
+        locationField.textContent = `${data.location.name}, ${data.location.country}`;
+        tempField.textContent = data.current.temp_c;
+        conditionField.textContent = data.current.condition.text;
+        humidityField.textContent = data.current.humidity;
+        windField.textContent = data.current.wind_kph;
+
+        if (aqi === 'yes') {
+          aqiBox.style.display = 'block';
+          aqiField.textContent = data.current.air_quality.pm2_5.toFixed(2);
+        } else {
+          aqiBox.style.display = 'none';
+        }
+
+        resultBox.style.display = 'block';
+      } catch (err) {
+        alert('Could not fetch weather data. Please check the city name or try again later.');
+        resultBox.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
